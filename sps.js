@@ -233,24 +233,28 @@ class SelectPhotoSize{
 
 		this.IsVerge();
 
-		if(this.mouse.move=='')return false;
+		if(this.mouse.move==''){
+			this.IntoCorral();
+		}
 
-		if(this.mouse.move=='tr'){
+
+
+		if(this.mouse.move=='tr' || this.mouse.move==''){
 			this.stretch.tl.y=this.stretch.tr.y;
 			this.stretch.br.x=this.stretch.tr.x;
 		}
 
-		if(this.mouse.move=='tl'){
+		if(this.mouse.move=='tl' || this.mouse.move==''){
 			this.stretch.tr.y=this.stretch.tl.y;
 			this.stretch.bl.x=this.stretch.tl.x;
 		}
 
-		if(this.mouse.move=='br'){
+		if(this.mouse.move=='br' || this.mouse.move==''){
 			this.stretch.tr.x=this.stretch.br.x;
 			this.stretch.bl.y=this.stretch.br.y;
 		}
 
-		if(this.mouse.move=='bl'){
+		if(this.mouse.move=='bl' || this.mouse.move==''){
 			this.stretch.tl.x=this.stretch.bl.x;
 			this.stretch.br.y=this.stretch.bl.y;
 		}
@@ -290,39 +294,61 @@ class SelectPhotoSize{
 	}
 
 	IsVerge(){
+		for(let key in this.stretch){
+			if(key=='cn')continue;
+			if(this.stretch[key].x<this.box.x){
+				this.mouse.move='';
+				this.MouseStyle(false);
+				return false;
+			}
 
-		if(this.stretch[this.mouse.move].x<this.box.x){
-			this.stretch[this.mouse.move].x=this.box.x;
-			this.mouse.move='';
-			this.MouseStyle(false);
-			return false;
-		}
+			if(this.stretch[key].x>this.box.x1){
+				this.mouse.move='';
+				this.MouseStyle(false);
+				return false;
+			}
 
-		if(this.stretch[this.mouse.move].x>this.box.x1){
-			this.stretch[this.mouse.move].x=this.box.x1;
-			this.mouse.move='';
-			this.MouseStyle(false);
-			return false;
-		}
+			if(this.stretch[key].y<this.box.y){
+				this.mouse.move='';
+				this.MouseStyle(false);
+				return false;
+			}
 
-		if(this.stretch[this.mouse.move].y<this.box.y){
-			this.stretch[this.mouse.move].y=this.box.y;
-			this.mouse.move='';
-			this.MouseStyle(false);
-			return false;
+			if(this.stretch[key].y>this.box.y1){
+				this.mouse.move='';
+				this.MouseStyle(false);
+				return false;
+			}
 		}
-
-		if(this.stretch[this.mouse.move].y>this.box.y1){
-			this.stretch[this.mouse.move].y=this.box.y1;
-			this.mouse.move='';
-			this.MouseStyle(false);
-			return false;
-		}
+		
 
 		return true;
 
 	}
 
+
+	IntoCorral(){
+
+		if(this.stretch.tl.x<this.box.x || this.stretch.bl.x<this.box.x){
+			this.stretch.tl.x=this.box.x;
+			this.stretch.bl.x=this.box.x;
+		}
+
+		if(this.stretch.tl.y<this.box.y || this.stretch.tr.y<this.box.y){
+			this.stretch.tl.y=this.box.y;
+			this.stretch.tr.y=this.box.y;
+		}
+
+		if(this.stretch.tr.x>this.box.x1 || this.stretch.br.x>this.box.x1){
+			this.stretch.tr.x=this.box.x1;
+			this.stretch.br.x=this.box.x1;
+		}
+
+		if(this.stretch.bl.y>this.box.y1 || this.stretch.br.y>this.box.y1){
+			this.stretch.bl.y=this.box.y1;
+			this.stretch.br.y=this.box.y1;
+		}
+	}
 
 	CheckMinSize(){
 		if(this.stretch.tr.x-this.stretch.tl.x<=this.minSize){
@@ -375,6 +401,7 @@ class SelectPhotoSize{
 	}
 
 	getSelected(){
+		this.IntoCorral();
 		return {
 			'x':this.selected.x-this.box.x,
 			'y':this.selected.y-this.box.y,
