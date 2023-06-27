@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <title>Select Photo Size</title>
+  <script src="sps.js"></script>
+  <link href="styles.css" rel="stylesheet"/>
+	<meta name=viewport content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+
+<canvas id="select_photo_size" width="520" height="520"></canvas>
+<div class="button-cut">
+	<button onclick="console.log(sps.getSelected());" >Cut</button>
+</div>
+
+<script>
+	var sps = new SelectPhotoSize('img-1.jpg');
+	sps.MoveBox();
+</script>
+</body>
+
+</html>
