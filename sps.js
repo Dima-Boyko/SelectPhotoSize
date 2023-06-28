@@ -42,6 +42,7 @@ class SelectPhotoSize{
 		this.minSize=this.StretchLength;
 		this.CoverCanvas=false;
 		this.move_box=false;
+		this.aspect_ratio=0;
 		this.mouse={
 			'x':0,
 			'y':0,
@@ -70,8 +71,12 @@ class SelectPhotoSize{
 		this.box.y1=this.box.y+this.img.height;
 		this.box.w=this.img.width;
 		this.box.h=this.img.height;
+
+		this.PreparationAspectRatio();
+
 		this.onload = true;
 
+		
 		this.SelectedUpdate();
 		this.Draw();
 		this.MouseController();
@@ -231,6 +236,8 @@ class SelectPhotoSize{
 		this.stretch[this.mouse.move].x=this.mouse.x-this.mouse.offsetX;
 		this.stretch[this.mouse.move].y=this.mouse.y-this.mouse.offsetY;
 
+		this.MoveAspectRatio();
+		
 		this.IsVerge();
 
 		if(this.mouse.move==''){
@@ -292,6 +299,78 @@ class SelectPhotoSize{
 
 		this.Draw();
 	}
+
+
+	MoveAspectRatio(){
+		if(this.mouse.move=='cn' || this.aspect_ratio==0)return false;
+
+		let w=0;
+		let h=0;
+		let len=0;
+
+
+
+		if(this.mouse.move=='tl'){
+			w=this.stretch.br.x-this.stretch.tl.x;
+			h=this.stretch.br.y-this.stretch.tl.y;
+			if(this.aspect_ratio==1){
+				len=(w+h)/2;
+				w=len;
+				h=len;
+			}else{
+				w=h*this.aspect_ratio;
+			}
+			this.stretch.tl.x=this.stretch.br.x-w;
+			this.stretch.tl.y=this.stretch.br.y-h;
+		}
+
+		if(this.mouse.move=='tr'){
+			w=this.stretch.tr.x-this.stretch.bl.x;
+			h=this.stretch.bl.y-this.stretch.tr.y;
+			if(this.aspect_ratio==1){
+				len=(w+h)/2;
+				w=len;
+				h=len;
+			}else{
+				w=h*this.aspect_ratio;
+			}
+			this.stretch.tr.x=this.stretch.bl.x+w;
+			this.stretch.tr.y=this.stretch.bl.y-h;
+		}
+
+		if(this.mouse.move=='bl'){
+			w=this.stretch.tr.x-this.stretch.bl.x;
+			h=this.stretch.bl.y-this.stretch.tr.y;
+			if(this.aspect_ratio==1){
+				len=(w+h)/2;
+				w=len;
+				h=len;
+			}else{
+				w=h*this.aspect_ratio;
+			}
+			this.stretch.bl.x=this.stretch.tr.x-w;
+			this.stretch.bl.y=this.stretch.tr.y+h;
+		}
+
+		if(this.mouse.move=='br'){
+			w=this.stretch.br.x-this.stretch.tl.x;
+			h=this.stretch.br.y-this.stretch.tl.y;
+			if(this.aspect_ratio==1){
+				len=(w+h)/2;
+				w=len;
+				h=len;
+			}else{
+				w=h*this.aspect_ratio;
+			}
+			this.stretch.br.x=this.stretch.tl.x+w;
+			this.stretch.br.y=this.stretch.tl.y+h;
+		}
+
+
+
+	}
+
+
 
 	IsVerge(){
 		for(let key in this.stretch){
@@ -410,6 +489,7 @@ class SelectPhotoSize{
 		}
 	}
 
+
 	setSelected(x=0,y=0,w=0,h=0){
 		if(x<0 || y<0 || w>this.w || h>this.h || w<this.minSize || h<this.minSize ) return false;
 		this.selected_update={
@@ -442,6 +522,46 @@ class SelectPhotoSize{
 		if(!this.onload)return false;
 		this.Draw();
 	}
+
+	AspectRatio(_value=0){
+		this.aspect_ratio=_value;
+		if(this.onload){
+			this.PreparationAspectRatio();
+			this.Draw();
+		}
+		
+	}
+
+	PreparationAspectRatio(){
+		if(this.aspect_ratio==0)return false;
+
+		let x=0;
+		let y=0;
+		let w=0;
+		let h=0;
+		let len=0;
+		if(this.aspect_ratio==1){
+			
+			if(this.box.w>this.box.h){
+				len=this.box.h;
+			}else{
+				len=this.box.w;
+			}
+			x=this.box.w/2-len/2;
+			y=this.box.h/2-len/2;
+			this.setSelected(x,y,len,len);
+		}else{
+			w=this.box.w;
+			h=w/this.aspect_ratio;
+			y=(this.box.h-h)/2;
+			this.setSelected(x,y,w,h);
+		}
+
+
+	}
+
+
+	
 
 }
 
