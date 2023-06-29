@@ -52,6 +52,19 @@ class SelectPhotoSize{
 			'offsetY':0,
 		};
 
+		this.mouse_calc={
+			'x':0,
+			'y':0,
+			'move':'',
+			'move_box':false,
+			'offsetX':0,
+			'offsetY':0,
+		};
+
+		this.option={
+			'corral':false,
+		}
+
 		this.onload = false;
 
 		this.img.onload = ()=>{
@@ -218,6 +231,11 @@ class SelectPhotoSize{
 		this.canvas.addEventListener("mouseup", function(e){
 			t.mouse.move='';
 		});
+
+		this.canvas.addEventListener("mouseout", function(e){
+			t.mouse.move='';
+			t.MouseStyle(false);
+		});
 	}
 
 	MouseDown(e){
@@ -232,19 +250,52 @@ class SelectPhotoSize{
 		if(this.mouse.move=='')return false;
 
 		this.stretch_save=JSON.parse(JSON.stringify(this.stretch));
-		
-		this.stretch[this.mouse.move].x=this.mouse.x-this.mouse.offsetX;
-		this.stretch[this.mouse.move].y=this.mouse.y-this.mouse.offsetY;
 
-		this.MoveAspectRatio();
-		
-		this.IsVerge();
+		this.CalcMove();
+		let Crossing=this.getCrossing();
+		if(Crossing.x!=0 || Crossing.y!=0){
+			if(Crossing.x!=0)this.mouse.x+=Crossing.x;
+			if(Crossing.y!=0)this.mouse.y+=Crossing.y;
+			this.stretch=JSON.parse(JSON.stringify(this.stretch_save));
 
-		if(this.mouse.move==''){
-			this.IntoCorral();
+			if(this.aspect_ratio>0 && this.mouse.move!='cn'){
+				this.CalcMove(false);
+			}else{
+				this.CalcMove();
+			}
+			
 		}
 
 
+		if(this.option.corral)this.IntoCorral();
+
+		if(this.CheckMinSize()){
+			this.stretch=this.stretch_save;
+			this.mouse.move='';
+			this.MouseStyle(false);
+		}
+
+		this.selected={
+			x:this.stretch.tl.x,
+			y:this.stretch.tl.y,
+			w:this.stretch.br.x-this.stretch.tl.x,
+			h:this.stretch.br.y-this.stretch.tl.y,
+		};
+
+		this.stretch.cn={'x':this.selected.x+this.selected.w/2,'y':this.selected.y+this.selected.h/2};
+
+		this.Draw();
+	}
+
+
+	CalcMove(_move=true){
+
+		if(_move){
+			this.stretch[this.mouse.move].x=this.mouse.x-this.mouse.offsetX;
+			this.stretch[this.mouse.move].y=this.mouse.y-this.mouse.offsetY;
+		}
+		
+		this.MoveAspectRatio();
 
 		if(this.mouse.move=='tr' || this.mouse.move==''){
 			this.stretch.tl.y=this.stretch.tr.y;
@@ -281,23 +332,6 @@ class SelectPhotoSize{
 			this.stretch.br.x-=BoxOffset.x;
 			this.stretch.br.y-=BoxOffset.y;
 		}
-
-		if(this.CheckMinSize()){
-			this.stretch=this.stretch_save;
-			this.mouse.move='';
-			this.MouseStyle(false);
-		}
-
-		this.selected={
-			x:this.stretch.tl.x,
-			y:this.stretch.tl.y,
-			w:this.stretch.br.x-this.stretch.tl.x,
-			h:this.stretch.br.y-this.stretch.tl.y,
-		};
-
-		this.stretch.cn={'x':this.selected.x+this.selected.w/2,'y':this.selected.y+this.selected.h/2};
-
-		this.Draw();
 	}
 
 
@@ -356,30 +390,48 @@ class SelectPhotoSize{
 		return BoxSize;
 	}
 
+
+	getCrossing(){
+		let crossing={'x':0,'y':0};
+
+		for(let key in this.stretch){
+			if(key=='cn')continue;
+			if(this.stretch[key].x<this.box.x){
+				crossing.x=this.box.x-this.stretch[key].x;
+			}
+
+			if(this.stretch[key].x>this.box.x1){
+				crossing.x=this.box.x1-this.stretch[key].x;
+			}
+
+			if(this.stretch[key].y<this.box.y){
+				crossing.y=this.box.y-this.stretch[key].y;
+			}
+
+			if(this.stretch[key].y>this.box.y1){
+				crossing.y=this.box.y1-this.stretch[key].y;
+			}
+		}
+
+		return crossing;
+	}
+
 	IsVerge(){
 		for(let key in this.stretch){
 			if(key=='cn')continue;
 			if(this.stretch[key].x<this.box.x){
-				this.mouse.move='';
-				this.MouseStyle(false);
 				return false;
 			}
 
 			if(this.stretch[key].x>this.box.x1){
-				this.mouse.move='';
-				this.MouseStyle(false);
 				return false;
 			}
 
 			if(this.stretch[key].y<this.box.y){
-				this.mouse.move='';
-				this.MouseStyle(false);
 				return false;
 			}
 
 			if(this.stretch[key].y>this.box.y1){
-				this.mouse.move='';
-				this.MouseStyle(false);
 				return false;
 			}
 		}
@@ -411,6 +463,50 @@ class SelectPhotoSize{
 			this.stretch.bl.y=this.box.y1;
 			this.stretch.br.y=this.box.y1;
 		}
+	}
+
+
+	AspectRatio(_value=0){
+		this.aspect_ratio=_value;
+		if(this.onload){
+			this.PreparationAspectRatio();
+			this.Draw();
+		}
+		
+	}
+
+	PreparationAspectRatio(){
+		if(this.aspect_ratio==0)return false;
+
+		let x=0;
+		let y=0;
+		let w=0;
+		let h=0;
+		let len=0;
+		if(this.aspect_ratio==1){
+			
+			if(this.box.w>this.box.h){
+				len=this.box.h;
+			}else{
+				len=this.box.w;
+			}
+			x=this.box.w/2-len/2;
+			y=this.box.h/2-len/2;
+			this.setSelected(x,y,len,len);
+		}else{
+			w=this.box.w;
+			h=w/this.aspect_ratio;
+			y=(this.box.h-h)/2;
+			if(h>this.box.h){
+				h=this.box.h;
+				w=h*this.aspect_ratio;
+				y=0;
+				x=(this.box.w-w)/2;
+			}
+			this.setSelected(x,y,w,h);
+		}
+
+
 	}
 
 	CheckMinSize(){
@@ -502,54 +598,16 @@ class SelectPhotoSize{
 		this.CoverCanvas=_value;
 	}
 
+
 	Update(){
 		if(!this.onload)return false;
 		this.Draw();
 	}
 
-	AspectRatio(_value=0){
-		this.aspect_ratio=_value;
-		if(this.onload){
-			this.PreparationAspectRatio();
-			this.Draw();
-		}
-		
+	
+	setOption(_name='',_value=''){
+		this.option[_name]=_value;
 	}
-
-	PreparationAspectRatio(){
-		if(this.aspect_ratio==0)return false;
-
-		let x=0;
-		let y=0;
-		let w=0;
-		let h=0;
-		let len=0;
-		if(this.aspect_ratio==1){
-			
-			if(this.box.w>this.box.h){
-				len=this.box.h;
-			}else{
-				len=this.box.w;
-			}
-			x=this.box.w/2-len/2;
-			y=this.box.h/2-len/2;
-			this.setSelected(x,y,len,len);
-		}else{
-			w=this.box.w;
-			h=w/this.aspect_ratio;
-			y=(this.box.h-h)/2;
-			if(h>this.box.h){
-				h=this.box.h;
-				w=h*this.aspect_ratio;
-				y=0;
-				x=(this.box.w-w)/2;
-			}
-			this.setSelected(x,y,w,h);
-		}
-
-
-	}
-
 
 	
 
