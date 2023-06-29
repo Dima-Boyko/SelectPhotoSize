@@ -304,73 +304,57 @@ class SelectPhotoSize{
 	MoveAspectRatio(){
 		if(this.mouse.move=='cn' || this.aspect_ratio==0)return false;
 
-		let w=0;
-		let h=0;
-		let len=0;
 
-
+		let BoxSize={'w':0,'h':0};
 
 		if(this.mouse.move=='tl'){
-			w=this.stretch.br.x-this.stretch.tl.x;
-			h=this.stretch.br.y-this.stretch.tl.y;
-			if(this.aspect_ratio==1){
-				len=(w+h)/2;
-				w=len;
-				h=len;
-			}else{
-				w=h*this.aspect_ratio;
-			}
-			this.stretch.tl.x=this.stretch.br.x-w;
-			this.stretch.tl.y=this.stretch.br.y-h;
+			BoxSize.w=this.stretch.br.x-this.stretch.tl.x;
+			BoxSize.h=this.stretch.br.y-this.stretch.tl.y;
+			BoxSize=this.CalcAspectRatio(BoxSize);
+			this.stretch.tl.x=this.stretch.br.x-BoxSize.w;
+			this.stretch.tl.y=this.stretch.br.y-BoxSize.h;
 		}
 
 		if(this.mouse.move=='tr'){
-			w=this.stretch.tr.x-this.stretch.bl.x;
-			h=this.stretch.bl.y-this.stretch.tr.y;
-			if(this.aspect_ratio==1){
-				len=(w+h)/2;
-				w=len;
-				h=len;
-			}else{
-				w=h*this.aspect_ratio;
-			}
-			this.stretch.tr.x=this.stretch.bl.x+w;
-			this.stretch.tr.y=this.stretch.bl.y-h;
+			BoxSize.w=this.stretch.tr.x-this.stretch.bl.x;
+			BoxSize.h=this.stretch.bl.y-this.stretch.tr.y;
+			BoxSize=this.CalcAspectRatio(BoxSize);
+			this.stretch.tr.x=this.stretch.bl.x+BoxSize.w;
+			this.stretch.tr.y=this.stretch.bl.y-BoxSize.h;
 		}
 
 		if(this.mouse.move=='bl'){
-			w=this.stretch.tr.x-this.stretch.bl.x;
-			h=this.stretch.bl.y-this.stretch.tr.y;
-			if(this.aspect_ratio==1){
-				len=(w+h)/2;
-				w=len;
-				h=len;
-			}else{
-				w=h*this.aspect_ratio;
-			}
-			this.stretch.bl.x=this.stretch.tr.x-w;
-			this.stretch.bl.y=this.stretch.tr.y+h;
+			BoxSize.w=this.stretch.tr.x-this.stretch.bl.x;
+			BoxSize.h=this.stretch.bl.y-this.stretch.tr.y;
+			BoxSize=this.CalcAspectRatio(BoxSize);
+			this.stretch.bl.x=this.stretch.tr.x-BoxSize.w;
+			this.stretch.bl.y=this.stretch.tr.y+BoxSize.h;
 		}
 
 		if(this.mouse.move=='br'){
-			w=this.stretch.br.x-this.stretch.tl.x;
-			h=this.stretch.br.y-this.stretch.tl.y;
-			if(this.aspect_ratio==1){
-				len=(w+h)/2;
-				w=len;
-				h=len;
-			}else{
-				w=h*this.aspect_ratio;
-			}
-			this.stretch.br.x=this.stretch.tl.x+w;
-			this.stretch.br.y=this.stretch.tl.y+h;
+			BoxSize.w=this.stretch.br.x-this.stretch.tl.x;
+			BoxSize.h=this.stretch.br.y-this.stretch.tl.y;
+			BoxSize=this.CalcAspectRatio(BoxSize);
+			this.stretch.br.x=this.stretch.tl.x+BoxSize.w;
+			this.stretch.br.y=this.stretch.tl.y+BoxSize.h;
 		}
 
 
 
 	}
 
+	CalcAspectRatio(BoxSize={}){
+		let len=0;
+		if(this.aspect_ratio==1){
+			len=(BoxSize.w+BoxSize.h)/2;
+			BoxSize.w=len;
+			BoxSize.h=len;
+		}else{
+			BoxSize.w=BoxSize.h*this.aspect_ratio;
+		}
 
+		return BoxSize;
+	}
 
 	IsVerge(){
 		for(let key in this.stretch){
@@ -554,6 +538,12 @@ class SelectPhotoSize{
 			w=this.box.w;
 			h=w/this.aspect_ratio;
 			y=(this.box.h-h)/2;
+			if(h>this.box.h){
+				h=this.box.h;
+				w=h*this.aspect_ratio;
+				y=0;
+				x=(this.box.w-w)/2;
+			}
 			this.setSelected(x,y,w,h);
 		}
 
