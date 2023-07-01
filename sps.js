@@ -85,7 +85,6 @@ class SelectPhotoSize{
 		this.box.w=this.img.width;
 		this.box.h=this.img.height;
 
-		this.PreparationAspectRatio();
 
 		this.onload = true;
 
