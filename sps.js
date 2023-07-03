@@ -97,10 +97,14 @@ class SelectPhotoSize{
 	SelectedUpdate(){
 
 		if(Object.entries(this.selected_update).length === 0){
-			this.selected.x=this.box.x;
-			this.selected.y=this.box.y;
-			this.selected.w=this.box.w;
-			this.selected.h=this.box.h;
+			if(this.aspect_ratio>0){
+				this.PreparationAspectRatio();
+			}else{
+				this.selected.x=this.box.x;
+				this.selected.y=this.box.y;
+				this.selected.w=this.box.w;
+				this.selected.h=this.box.h;
+			}
 		}else{
 			this.selected={
 				x:this.box.x+this.selected_update.x,
